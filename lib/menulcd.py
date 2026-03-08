@@ -49,6 +49,22 @@ class UITheme:
         self.value_gap = 5  # Gap between label and value
 
 
+class LCDNull:
+    """No-op LCD driver used when no display hardware is present."""
+    width = 128
+    height = 128
+    font_scale = 1
+
+    def LCD_Init(self):
+        pass
+
+    def LCD_ShowImage(self, *args, **kwargs):
+        pass
+
+    def LCD_Clear(self):
+        pass
+
+
 class MenuLCD:
     def __init__(self, xml_file_name, args, usersettings, ledsettings, ledstrip, learning, saving, midiports, hotspot, platform):
         self.list_count = None
@@ -88,8 +104,12 @@ class MenuLCD:
         # Initialize UI theme
         self.theme = UITheme(self.scale)
         
-        self.LCD.LCD_Init()
-        self.LCD.LCD_ShowImage(self.rotate_image(self.image), 0, 0)
+        try:
+            self.LCD.LCD_Init()
+            self.LCD.LCD_ShowImage(self.rotate_image(self.image), 0, 0)
+        except Exception as e:
+            logger.warning(f"LCD hardware not available, using null driver: {e}")
+            self.LCD = LCDNull()
         self.DOMTree = minidom.parse(xml_file_name)
         self.current_location = "menu"
         self.scroll_hold = 0
