@@ -17,12 +17,14 @@ class Hotspot:
         self.last_wifi_check_time = 0
 
         # Move chmod to background thread to avoid blocking startup
+        _project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
         def chmod_background():
             try:
-                subprocess.run("sudo chmod a+rwxX -R /home/Piano-LED-Visualizer/", shell=True, check=True)
+                subprocess.run(f"sudo chmod a+rwxX -R {_project_dir}/", shell=True, check=True)
             except Exception as e:
                 logger.warning(f"Error setting permissions in background: {e}")
-        
+
         import threading
         threading.Thread(target=chmod_background, daemon=True).start()
 
